@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TaskStatus {
+  todo
+  in_progress
+  done
+}
+
+enum BoardPriority {
+  high
+  medium
+  low
+}
+
+model User {
+  id        String       @id @default(uuid())
+  name      String
+  email     String    @unique
+  tasks     Task[]
+  boards    Board[]
+  passwordHash  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  role      Role      @default(USER)
+}
+
+model Board {
+  id        String         @id @default(uuid())
+  title     String
+  priority  BoardPriority  @default(medium)
+  tasks     Task[]
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Task {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(todo)
+  boardId     String
+  board       Board      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([boardId])
+  @@index([userId])
+}
